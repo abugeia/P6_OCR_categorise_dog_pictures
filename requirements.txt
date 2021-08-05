@@ -15,3 +15,4 @@ opencv-python=4.5.2.54
 pydot=1.4.2
 graphviz=0.17
 pydotplus
+keras-tuner=1.0.3
