@@ -1,30 +1,63 @@
 import argparse
+import tensorflow as tf
+from tensorflow import keras
+from keras.models import load_model
+import pickle
+import matplotlib.pyplot as plt
+from os import environ
 
-parser = argparse.ArgumentParser(description='Process some integers.')
-parser.add_argument('integers', metavar='N', type=int, nargs='+',
-                    help='an integer for the accumulator')
-parser.add_argument('--sum', dest='accumulate', action='store_const',
-                    const=sum, default=max,
-                    help='sum the integers (default: find the max)')
+############################
+# Remove warnings
+############################
+def suppress_qt_warnings():
+    environ["QT_DEVICE_PIXEL_RATIO"] = "0"
+    environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+    environ["QT_SCREEN_SCALE_FACTORS"] = "1"
+    environ["QT_SCALE_FACTOR"] = "1"
+
+if __name__ == "__main__":
+    suppress_qt_warnings()
+
+############################
+# Parser with 2 arguments
+############################
+parser = argparse.ArgumentParser(description='Classify dog breed from image')
+parser.add_argument('--path', help='path of the image file to be classified ', required=True)
+parser.add_argument('--pic_show', help='if specified show the picture ', default=False, action="store_true")                  
 
 args = parser.parse_args()
-print(args.accumulate(args.integers))
+path = args.path
+pic_show = args.pic_show
 
-# je ne vois pas l'intéret de sauvegarder l'image et de la recharger
-def download_and_predict(url, filename):
-    # download and save
-    os.system("curl -s {} -o {}".format(url, filename))
-    img = Image.open(filename)
-    img = img.convert('RGB')
-    img = img.resize((224, 224))
-    img.save(filename)
-    # show image
-    plt.figure(figsize=(4, 4))
-    plt.imshow(img)
-    plt.axis('off')
-    # predict
-    img = imread(filename)
-    img = preprocess_input(img)
-    probs = model.predict(np.expand_dims(img, axis=0))
-    for idx in probs.argsort()[0][::-1][:5]:
-        print("{:.2f}%".format(probs[0][idx]*100), "\t", label_maps_rev[idx].split("-")[-1])
+############################
+# Model and labels loading
+############################
+model_path = './model/'
+model = load_model(model_path + 'vgg16_fine_tuning_whit_cropped.h5', compile = False)
+
+open_file = open(model_path + 'labels', "rb")
+labels = pickle.load(open_file)
+open_file.close()
+
+############################
+# Prediction section
+############################
+def predict(path, model, pic_show):
+    '''predict the breeed of the picture'''
+    img = keras.preprocessing.image.load_img(
+        path, target_size=(224, 224)
+    )
+    if pic_show:
+        plt.imshow(img)
+        plt.axis('off')
+        plt.show()
+    img_array = keras.preprocessing.image.img_to_array(img)
+    img_array = tf.keras.applications.vgg16.preprocess_input(img_array)
+    img_array = tf.expand_dims(img_array, 0)  # Create batch axis
+
+    predictions = model.predict(img_array)
+
+    for pourc, name in zip(predictions[0], labels) :
+        print("{:.2f}%".format(pourc*100), "\t", name)
+
+predict(path, model, pic_show)
