@@ -25,7 +25,7 @@ python classifier.py --path 'your image path'
 
 ## References
 
-Dogs dataset :     [https://data.stackexchange.com/stackoverflow/query/new  ](http://vision.stanford.edu/aditya86/ImageNetDogs/)
+Dogs dataset :     [http://vision.stanford.edu/aditya86/ImageNetDogs/](http://vision.stanford.edu/aditya86/ImageNetDogs/)
 
 ## Results
 
